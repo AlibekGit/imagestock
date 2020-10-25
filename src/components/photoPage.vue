@@ -20,7 +20,7 @@
                 </div>
                 <div class="container" style="padding: 50px 0">
                     <div style="display: flex; flex-direction: column; justify-content: center; align-items: center">
-                        <p>Похожии теги</p>
+                        <p>Похожии теги </p>
                         <div>
                             <span v-for="tag of tags" class="photoPage__tags">{{tag.title}}</span>
                         </div>

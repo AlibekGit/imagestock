@@ -23,6 +23,11 @@ let router = new Router({
             path:'/favorite',
             name:'favorite',
             component:()=>import('./components/favorite')
+        },
+        {
+            path:'/photopage/:id',
+            name:'photopage',
+            component:()=>import('./components/photoPage')
         }
     ]
 })

@@ -3,15 +3,14 @@ import App from './App.vue'
 import 'materialize-css/dist/js/materialize.min'
 import store from './store'
 import router from './router'
-import lg from 'vue-light-gallery'
+import mason from 'vue-masonry-css'
 
-
-Vue.use(lg)
+Vue.use(mason)
 Vue.config.productionTip = false
 
 new Vue({
   render: h => h(App),
   router:router,
-  lg,
   store,
+  mason,
 }).$mount('#app')

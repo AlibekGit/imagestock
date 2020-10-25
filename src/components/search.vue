@@ -1,59 +1,62 @@
 <template>
-    <div class="container">
-        <div>
+    <div>
+        <div class="search">
             <div class="row">
-                <div class="col s8 offset-s2">
-                    <h1>Unsplash App</h1>
-                    <router-link
-                            tag="button"
-                            class="btn"
-                            to="/history"
-                    >
-                        Show History
-                    </router-link>
-                    <router-link
-                            tag="button"
-                            class="btn"
-                            to="/favorite"
-                    >
-                        Show Favorite
-                    </router-link>
-                    <nav>
-                        <div class="nav-wrapper">
-                            <form @submit.prevent="showImages">
-                                <div class="input-field">
-                                    <input id="search" type="search" v-model="handle" class="">
-                                    <label active-class="active" class="label-icon" for="search"><i class="material-icons">search</i></label>
-                                    <i class="material-icons" @click="handle=null">close</i>
-                                    <button class="btn " type="submit">Show Images</button>
-                                </div>
-                            </form>
-
-                        </div>
-                    </nav>
+                <div class="col s12 center">
+                    <div class="input-field col s6 offset-s3">
+                        <h2>Поиск</h2>
+                        <input type="search" class="center" v-model="search" @click.prevent="showImages">
+                    </div>
+                </div>
+                <div class="col s6 offset-s3 search__tags">
+                    <ul class="search__tags-list">
+                        <li>Wallpapers</li>
+                        <li>Textures & Patterns</li>
+                        <li>Nature</li>
+                        <li>Current events</li>
+                        <li>Architecture</li>
+                        <li>Bussiness & Work</li>
+                        <li>Film</li>
+                        <li>Animals</li>
+                        <li>Travel</li>
+                        <li>Fashion</li>
+                        <li>Food & Drink</li>
+                        <li>Spirituality</li>
+                        <li>Experimental</li>
+                        <li>People</li>
+                        <li>Health</li>
+                        <li>Arts & Culture</li>
+                    </ul>
                 </div>
 
             </div>
 
         </div>
-        <div class="row photos">
-            <div class="col s12 photos__wrapper">
-                <light-gallery
-                        :images="images"
-                        :index="index"
-                        @close="index=null"
-                />
-                <div    class="photos__items center-align"
-                        v-for="(photo,photoId) in photos"
-                        :key="photoId"
-                        @click="index=photoId"
+        <div class="row photos container">
+            <div class="col s12 photos__wrapper ">
+                <masonry :cols="{default: 3, 1000: 2, 700: 1}"
+                         :gutter="{default: '30px'}"
                 >
-                    <i class="material-icons" @click="addFavorite(photo)">favorite_border</i>
-                    <img
-                            class="responsive-img photos__link"
-                            :src="photo.urls.small"
-                    />
-                </div>
+                    <div    class="photos__items center-align"
+                            v-for="(photo,photoId) in photos"
+                            :key="photo.id"
+                    >
+                        <img
+                                class="responsive-img photos__link"
+                                :src="photo.urls.small"
+                        />
+                        <div class="photos__hover">
+                            <div><img :src="photo.user.profile_image.medium" class="photos__hover-image"></div>
+                            <p style="margin-bottom: 0">{{photo.user.name}}</p>
+                            <span>@{{photo.user.instagram_username}}</span>
+                            <div class="photos__hover-icons" @click="showPhotoPage(photo)">
+                                <i class="material-icons">favorite</i>
+                                <router-link tag="i" class="material-icons"  style="cursor: pointer" :to="'/photopage/'+photo.id" >zoom_out_map</router-link>
+                                <i class="material-icons">file_download</i>
+                            </div>
+                        </div>
+                    </div>
+                </masonry>
 
             </div>
         </div>
@@ -61,58 +64,101 @@
 </template>
 
 <script>
-    import axios from "axios"
     export default {
         name: "search",
         data:()=>({
-            handle : null,
-            photos: [],
-            index:null,
-            images:[]
-
+            search : null
         }),
+        computed:{
+            photos(){
+                return this.$store.getters.photos
+            }
+        },
         methods:{
             showImages(){
-                const url = 'https://api.unsplash.com/search/photos?page=1&per_page=10&query='
-                    + this.handle + '&client_id=if5yQFOqmjDjCQDeqcUKfSl2FlNFeYx86sB6PX78fno'
-                const history = this.handle
+                const url = 'https://api.unsplash.com/search/photos?page=1&per_page=15&query='
+                    + this.search + '&client_id=if5yQFOqmjDjCQDeqcUKfSl2FlNFeYx86sB6PX78fno'
+                const history = this.search
                 this.$store.dispatch('createHistoryList',history)
-                axios.get(url)
-                    .then((response)=>{
-                        this.photos=response.data.results
-                        this.images.splice(0,10)
-                        this.photos.forEach((photo,index,array)=>{
-                            array=photo.urls.regular
-                            this.images.push(array)
-
-                        })
-
-                    })
+                this.$store.dispatch('photosList', url)
             },
             addFavorite(photo){
                 let favoritesUrls = photo.urls.regular
-                this.$store.dispatch('createFavorites',favoritesUrls)
+                this.$store.dispatch('createFavoritesList',favoritesUrls)
+            },
+            showPhotoPage(photo){
+                let photoPageUrl = photo
+                this.$store.dispatch('photoPageUrls',photoPageUrl)
             }
         }
     }
 </script>
 
 <style scoped lang="scss">
-    .photos{
-        margin-top: 100px;
-    &__wrapper{
-         display: flex;
-         flex-wrap: wrap;
-        justify-content: center;
-     }
-    &__items{
-         padding: 0 5px;
-        width: 250px;
+    .search{
+        background-color: black;
+        height: 250px;
+        &__input{
+            font-size: 72px;
+        }
+        &__tags-list{
+            display: flex;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            li{
+                padding-right: 15px;
+            }
+        }
+    }
 
-     }
-    &__link{
-         border: 3px solid #e57373;
-        cursor: pointer;
-     }
+
+
+    .photos{
+        margin-top: 80px;
+        &__wrapper{
+
+         }
+        &__items{
+            position: relative;
+            overflow: hidden;
+            margin-top: 30px;
+         }
+        &__link{
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 0 8px 0;
+            width: 100%;
+            height: 100%;
+         }
+        &__hover{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-content: center;
+            position: absolute;
+            border-radius: 8px;
+            width: 100%;
+            height: 99%;
+            top: -100%;
+            transition: 0.3s;
+            backdrop-filter: blur(3px);
+            background: rgba(40, 36, 22, 0.5);
+        }
+        .photos__items:hover .photos__hover{
+            top: 0;
+        }
+        &__hover-image{
+            border: 1px solid #FFFFFF;
+            border-radius: 8px;
+        }
+        &__hover-icons{
+            display: flex;
+            justify-content: center;
+            margin-top: 10%;
+        }
+        &__hover-icons i:nth-child(2n){
+            padding: 0 50px;
+        }
     }
 </style>
